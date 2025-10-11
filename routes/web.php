@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return response()->redirectTo(route('dashboard'));
+    }
     return view('welcome');
 });
 
