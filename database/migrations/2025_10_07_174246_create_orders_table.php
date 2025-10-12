@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             // Foreign keys
-            $table->foreignId('user_id')->constrained()->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('delivery_agent_id')->nullable()->constrained('users')->nullOnDelete();
 
             // Order Details
@@ -50,6 +50,7 @@ return new class extends Migration
             $table->json('meta')->nullable();
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -9,6 +9,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return response()->redirectTo(route('dashboard'));
     }
+
     return view('welcome');
 });
 
