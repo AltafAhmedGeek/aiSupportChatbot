@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('sender', ['user', 'bot']);
             $table->text('message');
-            $table->string('intent')->nullable(); // e.g. order_status, faq, greeting
+            $table->string('intend')->nullable(); // e.g. order_status, faq, greeting
             $table->foreignId('order_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();

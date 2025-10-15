@@ -17,7 +17,7 @@ class Chat extends Model
         'response',
         'meta',
         'sender',
-        'intent',
+        'intend',
     ];
 
     public function user(): BelongsTo
