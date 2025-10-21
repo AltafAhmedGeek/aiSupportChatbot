@@ -54,9 +54,9 @@ class ChatIntendDetectorService
 
     private function isFaqRelated($message): bool
     {
-        $keywords = ['how to', 'what is', 'faq', 'question', 'help', 'support', 'contact', 'customer care', 'payment', 'refund', 'return', 'cancel', 'track order', 'where is my order'];
-        foreach ($keywords as $keyword) {
-            if (str_contains($message, strtolower($keyword))) {
+        $keywords = Faq::TAGS;
+        foreach ($keywords as $key => $keyword) {
+            if (str_contains($message, strtolower($key))) {
                 return true;
             }
         }

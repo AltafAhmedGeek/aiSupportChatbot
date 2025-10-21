@@ -21,7 +21,7 @@ class ChatService
 
             BasicIntendEnum::ORDER->value => $this->handleOrderQueries($message),
 
-            default => "I'm not sure I understood that. Could you please rephrase?"
+            default => "I'm not sure, Could you please rephrase?"
         };
     }
 
