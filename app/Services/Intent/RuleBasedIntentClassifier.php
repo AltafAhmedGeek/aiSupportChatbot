@@ -27,6 +27,10 @@ class RuleBasedIntentClassifier
             return ['intent' => 'order.status'];
         }
 
+        if (preg_match('/\b(change address|update address|change shipping address|change delivery address)\b/i', $m)) {
+            return ['intent' => 'order.update_address'];
+        }
+
         if (preg_match('/\b(deliver(ed|y)?|delivered|mark as delivered|received|delivery confirmation)\b/i', $m)) {
             return ['intent' => 'order.update_delivered'];
         }
