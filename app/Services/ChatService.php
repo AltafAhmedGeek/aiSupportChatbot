@@ -11,7 +11,7 @@ class ChatService
         private ChatIntendDetectorService $detector
     ) {}
 
-    public function handleMessage($message, $user)
+    public function handleMessage($message)
     {
         $intend = $this->detectBasicintend($message);
 
@@ -38,7 +38,9 @@ class ChatService
 
     private function handleOrderQueries($message): string
     {
-        return 'Please provide your order number to check the status.';
+        $intend = $this->detectAdvancedintend(BasicIntendEnum::ORDER, $message);
+
+        return $intend;
     }
 
     private function handleFaqQueries($message)
@@ -58,7 +60,7 @@ class ChatService
         $answer = null;
 
         $faqs->each(function ($faq) use (&$answer) {
-            $answer .= $faq->answer;
+            $answer .= '\n'.$faq->answer;
         });
 
         if (! $answer) {

@@ -4,19 +4,24 @@ namespace App\Services;
 
 use App\Constants\Faq;
 use App\Enums\Chat\BasicIntendEnum;
+use App\Services\Intent\RuleBasedIntentClassifier;
 
 class ChatIntendDetectorService
 {
     public function detectBasicintend($message): ?string
     {
-        $message = strtolower($message);
-        if ($this->isFaqRelated($message)) {
-            return 'faq';
-        } elseif ($this->isOrderRelated($message)) {
-            return 'order';
-        } else {
-            return null;
+        $classifier = new RuleBasedIntentClassifier;
+        $result = $classifier->classify($message);
+
+        if (str_starts_with($result['intent'], BasicIntendEnum::ORDER->value)) {
+            return BasicIntendEnum::ORDER->value;
         }
+
+        if ($this->isFaqRelated(strtolower($message))) {
+            return BasicIntendEnum::FAQ->value;
+        }
+
+        return null;
     }
 
     public function detectAdvancedintend(BasicIntendEnum $intend, $message): ?string
@@ -28,33 +33,23 @@ class ChatIntendDetectorService
                     return $tag;
                 }
             }
-        } elseif ($intend == BasicIntendEnum::ORDER) {
-            $keywords = ['cancel', 'track', 'status', 'return', 'refund'];
-            foreach ($keywords as $keyword) {
-                if (str_contains(strtolower($message), strtolower($keyword))) {
-                    return $keyword;
-                }
+        }
+
+        if ($intend == BasicIntendEnum::ORDER) {
+            $classifier = new RuleBasedIntentClassifier;
+            $result = $classifier->classify($message);
+            if ($result['intent'] !== 'unknown') {
+                return $result['intent'];
             }
         }
 
         return null;
     }
 
-    private function isOrderRelated($message): bool
-    {
-        $keywords = ['order', 'status', 'track', 'tracking', 'delivery', 'shipment', 'shipped', 'arrived', 'where is my order', 'cancel order', 'return order'];
-        foreach ($keywords as $keyword) {
-            if (str_contains($message, $keyword)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private function isFaqRelated($message): bool
     {
         $keywords = Faq::TAGS;
+
         foreach ($keywords as $key => $keyword) {
             if (str_contains($message, strtolower($key))) {
                 return true;
