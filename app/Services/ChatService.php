@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\Chat\BasicIntendEnum;
 use App\Models\Faq;
+use App\Services\Intent\SlotExtractor;
 
 class ChatService
 {
@@ -39,6 +40,7 @@ class ChatService
     private function handleOrderQueries($message): string
     {
         $intend = $this->detectAdvancedintend(BasicIntendEnum::ORDER, $message);
+        $slots = (new SlotExtractor)->extract($message);
 
         return $intend;
     }

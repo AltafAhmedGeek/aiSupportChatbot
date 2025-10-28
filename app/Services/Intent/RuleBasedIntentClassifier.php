@@ -23,7 +23,7 @@ class RuleBasedIntentClassifier
             return ['intent' => 'order.request_refund'];
         }
 
-        if (preg_match('/\b(status|order status|what is the status)\b/i', $m)) {
+        if (preg_match('/\b(status of order|order status|what is the status)\b/i', $m)) {
             return ['intent' => 'order.status'];
         }
 
