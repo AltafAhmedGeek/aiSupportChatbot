@@ -140,12 +140,11 @@ class OrderIntentHandler
                 'order_details' => $order->only([
                     'order_number',
                     'status',
-                    'tracking_number',
-                    'carrier',
-                    'current_location',
-                    'eta',
+                    'transaction_id',
+                    'estimated_delivery_at',
                     'payment_status',
-                    'total',
+                    'payment_method',
+                    'final_amount',
                 ]),
             ],
         ];
@@ -163,7 +162,7 @@ class OrderIntentHandler
         }
 
         if (strtolower((string) $order->status) === 'delivered') {
-            return ['status' => 'noop', 'message' => 'Order already delivered.', 'data' => ['order_number' => $order->order_number]];
+            return ['status' => 'noop', 'message' => 'Order already delivered.', 'data' => []];
         }
 
         $deliveredAt         = $slots['delivered_at'] ?? now()->toIso8601String();
@@ -171,7 +170,7 @@ class OrderIntentHandler
         $order->delivered_at = $deliveredAt;
         $order->save();
 
-        return ['status' => 'done', 'message' => 'Order marked delivered.', 'data' => ['order' => $order->toArray()]];
+        return ['status' => 'done', 'message' => 'Order marked delivered.', 'data' => []];
     }
 
     protected function estimateDelivery(array $slots): array
@@ -185,9 +184,9 @@ class OrderIntentHandler
             return ['status' => 'not_found', 'message' => 'Order not found for tracking, Enter Order number eg.#GHJ56GHNM.', 'data' => []];
         }
 
-        $eta = $order->eta ?? null;
+        $eta = $order->estimated_delivery_at ?? null;
         if (! $eta) {
-            return ['status' => 'unavailable', 'message' => 'ETA not available for this order.', 'data' => ['order_number' => $order->order_number]];
+            return ['status' => 'unavailable', 'message' => 'ETA not available for this order.', 'data' => []];
         }
 
         return ['status' => 'done', 'message' => 'ETA fetched.', 'data' => ['order_number' => $order->order_number, 'eta' => $eta]];
@@ -206,13 +205,9 @@ class OrderIntentHandler
 
         $data = [
             'order_number'   => $order->order_number,
-            'payment_status' => $order->payment_status       ?? 'unknown',
-            'paid_amount'    => $order->paid_amount          ?? 0,
-            'currency'       => $order->currency             ?? null,
-            'attempts'       => $order->payment_attempts     ?? 0,
-            'gateway'        => $order->payment_gateway      ?? null,
-            'transactions'   => $order->payment_transactions ?? [],
-            'transaction_id' => $slots['transaction_id']     ?? null,
+            'payment_status' => $order->payment_status ?? 'unknown',
+            'final_amount'   => $order->final_amount   ?? 0,
+            'transaction_id' => $order->transaction_id ?? null,
         ];
 
         return ['status' => 'done', 'message' => 'Payment status fetched.', 'data' => $data];
@@ -232,10 +227,6 @@ class OrderIntentHandler
         $data = [
             'order_number' => $order->order_number,
             'method'       => $order->payment_method ?? null,
-            'brand'        => $order->card_brand     ?? null,
-            'last4'        => $order->card_last4     ?? null,
-            'upi'          => $order->upi            ?? null,
-            'wallet'       => $order->wallet         ?? null,
         ];
 
         return ['status' => 'done', 'message' => 'Payment method fetched.', 'data' => $data];
@@ -253,14 +244,11 @@ class OrderIntentHandler
         }
 
         $data = [
-            'order_number' => $order->order_number,
-            'subtotal'     => $order->subtotal ?? 0,
-            'tax'          => $order->tax      ?? 0,
-            'discount'     => $order->discount ?? 0,
-            'shipping'     => $order->shipping ?? 0,
-            'total'        => $order->total    ?? 0,
-            'currency'     => $order->currency ?? null,
-            'items'        => $order->items    ?? [],
+            'final_amount'    => $order->order_number,
+            'total_amount'    => $order->total_amount    ?? 0,
+            'discount_amount' => $order->discount_amount ?? 0,
+            'delivery_fee'    => $order->delivery_fee    ?? 0,
+            'subtotal'        => $order->final_amount    ?? 0,
         ];
 
         return ['status' => 'done', 'message' => 'Amount details fetched.', 'data' => $data];
@@ -278,12 +266,11 @@ class OrderIntentHandler
         }
 
         $data = [
-            'order_number'  => $order->order_number,
-            'agent_name'    => $order->agent_name       ?? null,
-            'agent_phone'   => $order->agent_phone      ?? null,
-            'agent_vehicle' => $order->agent_vehicle    ?? null,
-            'agent_rating'  => $order->agent_rating     ?? null,
-            'last_location' => $order->current_location ?? null,
+            'order_number' => $order->order_number,
+            'agent'        => [
+                'name'  => $order->deliveryAgent->name ?? null,
+                'email' => $order->email               ?? null,
+            ],
         ];
 
         return ['status' => 'done', 'message' => 'Agent info fetched.', 'data' => $data];

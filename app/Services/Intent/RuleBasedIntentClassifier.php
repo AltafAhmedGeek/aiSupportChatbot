@@ -27,12 +27,12 @@ class RuleBasedIntentClassifier
             return ['intent' => 'order.status'];
         }
 
-        if (preg_match('/\b(deliver(ed|y)?|delivered|mark as delivered|received|delivery confirmation)\b/i', $m)) {
-            return ['intent' => 'order.update_delivered'];
+        if (preg_match('/\b(estimated delivery|when will.*arrive|when will.*delivered|expected date|delivery time|when to deliver)\b/i', $m)) {
+            return ['intent' => 'order.estimate_delivery'];
         }
 
-        if (preg_match('/\b(estimated delivery|when will.*arrive|expected date|delivery time|when to deliver)\b/i', $m)) {
-            return ['intent' => 'order.estimate_delivery'];
+        if (preg_match('/\b(deliver(ed|y)?|delivered|mark as delivered|received|delivery confirmation)\b/i', $m)) {
+            return ['intent' => 'order.update_delivered'];
         }
 
         if (preg_match('/\b(payment status|paid|unpaid|pending payment|is my payment received)\b/i', $m)) {
@@ -43,7 +43,7 @@ class RuleBasedIntentClassifier
             return ['intent' => 'order.payment_method'];
         }
 
-        if (preg_match('/\b(total amount|discount|final amount|invoice|price details|order amount)\b/i', $m)) {
+        if (preg_match('/\b(total amount|cost|discount|final amount|invoice|price details|order amount)\b/i', $m)) {
             return ['intent' => 'order.details_amount'];
         }
 
