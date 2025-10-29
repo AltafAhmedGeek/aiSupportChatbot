@@ -21,8 +21,16 @@ return new class extends Migration
             // Order Details
             $table->string('order_number')->unique();
             $table->enum('status', [
-                'pending', 'confirmed', 'dispatched', 'delivered', 'cancelled', 'refunded',
+                'pending',
+                'confirmed',
+                'dispatched',
+                'delivered',
+                'cancelled',
+                'refunded',
+                'refund requested',
             ])->default('pending');
+
+            $table->string('refund_reason')->nullable();
 
             $table->decimal('total_amount', 10, 2);
             $table->decimal('delivery_fee', 10, 2)->default(0);

@@ -37,11 +37,14 @@ class OrderSeeder extends Seeder
             $estimatedDelivery = $createdAt->copy()->addHours(rand(2, 48));
             $deliveredAt = in_array($status, ['delivered', 'refunded']) ? $estimatedDelivery->copy()->addHours(rand(0, 2)) : null;
 
+            $refundReason = $status == 'refunded' ? 'Customer didn\'t receive the product' : null;
+
             Order::create([
                 'user_id' => $user->id,
                 'delivery_agent_id' => $agent?->id,
                 'order_number' => strtoupper(Str::random(10)),
                 'status' => $status,
+                'refund_reason' => $refundReason,
                 'total_amount' => $total,
                 'delivery_fee' => $deliveryFee,
                 'discount_amount' => $discount,

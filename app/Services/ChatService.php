@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\Chat\BasicIntendEnum;
 use App\Models\Faq;
+use App\Services\Intent\OrderIntentHandler;
 use App\Services\Intent\SlotExtractor;
 
 class ChatService
@@ -29,7 +30,6 @@ class ChatService
     private function detectBasicintend($message): ?string
     {
         return $this->detector->detectBasicintend($message);
-
     }
 
     private function detectAdvancedintend(BasicIntendEnum $basicIntend, $message): ?string
@@ -41,8 +41,10 @@ class ChatService
     {
         $intend = $this->detectAdvancedintend(BasicIntendEnum::ORDER, $message);
         $slots = (new SlotExtractor)->extract($message);
+        $intendhandler = new OrderIntentHandler;
+        $result = $intendhandler->handle($intend, $slots);
 
-        return $intend;
+        return $this->generateResponse($result, $intendhandler);
     }
 
     private function handleFaqQueries($message)
@@ -72,5 +74,10 @@ class ChatService
         cache()->put('faq_response_'.sha1($message), $answer, now()->addHours(24));
 
         return $answer;
+    }
+
+    private function generateResponse(array $result, OrderIntentHandler $intendhandler, bool $isAiMode = false): string
+    {
+        return $result['message'].' : '.PHP_EOL.$intendhandler->dataToString($result['data']);
     }
 }

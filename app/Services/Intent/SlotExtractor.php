@@ -38,6 +38,8 @@ class SlotExtractor
             }
         }
 
+        $slots = array_map('strtoupper', $slots);
+
         return array_filter($slots, function ($v) {
             return ! empty(trim((string) $v));
         });
