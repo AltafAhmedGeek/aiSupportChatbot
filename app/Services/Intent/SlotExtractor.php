@@ -9,7 +9,7 @@ class SlotExtractor
      */
     public function extract(string $message): array
     {
-        $m = strtolower($message);
+        $m     = strtolower($message);
         $slots = [];
 
         // order_number

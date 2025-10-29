@@ -39,10 +39,10 @@ class ChatService
 
     private function handleOrderQueries($message): string
     {
-        $intend = $this->detectAdvancedintend(BasicIntendEnum::ORDER, $message);
-        $slots = (new SlotExtractor)->extract($message);
+        $intend        = $this->detectAdvancedintend(BasicIntendEnum::ORDER, $message);
+        $slots         = (new SlotExtractor)->extract($message);
         $intendhandler = new OrderIntentHandler;
-        $result = $intendhandler->handle($intend, $slots);
+        $result        = $intendhandler->handle($intend, $slots);
 
         return $this->generateResponse($result, $intendhandler);
     }

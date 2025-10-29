@@ -11,7 +11,7 @@ class ChatIntendDetectorService
     public function detectBasicintend($message): ?string
     {
         $classifier = new RuleBasedIntentClassifier;
-        $result = $classifier->classify($message);
+        $result     = $classifier->classify($message);
 
         if (str_starts_with($result['intent'], BasicIntendEnum::ORDER->value)) {
             return BasicIntendEnum::ORDER->value;
@@ -37,7 +37,7 @@ class ChatIntendDetectorService
 
         if ($intend == BasicIntendEnum::ORDER) {
             $classifier = new RuleBasedIntentClassifier;
-            $result = $classifier->classify($message);
+            $result     = $classifier->classify($message);
             if ($result['intent'] !== 'unknown') {
                 return $result['intent'];
             }

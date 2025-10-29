@@ -16,18 +16,18 @@ class OrderIntentHandler
     public function handle(string $intent, array $slots = []): array
     {
         return match ($intent) {
-            'order.track_location' => $this->trackLocation($slots),
-            'order.cancel' => $this->cancel($slots),
-            'order.request_refund' => $this->requestRefund($slots),
-            'order.status' => $this->status($slots),
-            'order.update_delivered' => $this->updateDelivered($slots),
+            'order.track_location'    => $this->trackLocation($slots),
+            'order.cancel'            => $this->cancel($slots),
+            'order.request_refund'    => $this->requestRefund($slots),
+            'order.status'            => $this->status($slots),
+            'order.update_delivered'  => $this->updateDelivered($slots),
             'order.estimate_delivery' => $this->estimateDelivery($slots),
-            'order.payment_status' => $this->paymentStatus($slots),
-            'order.payment_method' => $this->paymentMethod($slots),
-            'order.details_amount' => $this->detailsAmount($slots),
-            'order.details' => $this->status($slots),
-            'order.agent_info' => $this->agentInfo($slots),
-            default => ['status' => 'error', 'message' => 'Unsupported order intent', 'data' => []],
+            'order.payment_status'    => $this->paymentStatus($slots),
+            'order.payment_method'    => $this->paymentMethod($slots),
+            'order.details_amount'    => $this->detailsAmount($slots),
+            'order.details'           => $this->status($slots),
+            'order.agent_info'        => $this->agentInfo($slots),
+            default                   => ['status' => 'error', 'message' => 'Unsupported order intent', 'data' => []],
         };
     }
 
@@ -56,12 +56,12 @@ class OrderIntentHandler
         }
 
         $data = [
-            'order_number' => $order->order_number,
-            'status' => $order->status ?? null,
-            'tracking_number' => $order->tracking_number ?? null,
-            'carrier' => $order->carrier ?? null,
+            'order_number'     => $order->order_number,
+            'status'           => $order->status           ?? null,
+            'tracking_number'  => $order->tracking_number  ?? null,
+            'carrier'          => $order->carrier          ?? null,
             'current_location' => $order->current_location ?? null,
-            'eta' => $order->eta ?? null,
+            'eta'              => $order->eta              ?? null,
         ];
 
         return ['status' => 'done', 'message' => 'Tracking info fetched.', 'data' => $data];
@@ -101,7 +101,7 @@ class OrderIntentHandler
             return ['status' => 'not_found', 'message' => 'Order not found for tracking, Enter Order number eg.#GHJ56GHNM.', 'data' => []];
         }
 
-        $reason = $slots['refund_reason'] ?? null;
+        $reason        = $slots['refund_reason'] ?? null;
         $order->status = 'refund requested';
         if ($reason !== null) {
             $order->refund_reason = $reason;
@@ -113,10 +113,10 @@ class OrderIntentHandler
         $order->save();
 
         return [
-            'status' => 'done',
+            'status'  => 'done',
             'message' => 'Refund request recorded.',
-            'data' => [
-                'order_number' => $order->order_number,
+            'data'    => [
+                'order_number'  => $order->order_number,
                 'refund_reason' => $order->refund_reason ?? null,
             ],
         ];
@@ -134,9 +134,9 @@ class OrderIntentHandler
         }
 
         return [
-            'status' => 'done',
+            'status'  => 'done',
             'message' => "Order status: {$order->status}",
-            'data' => [
+            'data'    => [
                 'order_details' => $order->only([
                     'order_number',
                     'status',
@@ -166,8 +166,8 @@ class OrderIntentHandler
             return ['status' => 'noop', 'message' => 'Order already delivered.', 'data' => ['order_number' => $order->order_number]];
         }
 
-        $deliveredAt = $slots['delivered_at'] ?? now()->toIso8601String();
-        $order->status = 'delivered';
+        $deliveredAt         = $slots['delivered_at'] ?? now()->toIso8601String();
+        $order->status       = 'delivered';
         $order->delivered_at = $deliveredAt;
         $order->save();
 
@@ -205,14 +205,14 @@ class OrderIntentHandler
         }
 
         $data = [
-            'order_number' => $order->order_number,
-            'payment_status' => $order->payment_status ?? 'unknown',
-            'paid_amount' => $order->paid_amount ?? 0,
-            'currency' => $order->currency ?? null,
-            'attempts' => $order->payment_attempts ?? 0,
-            'gateway' => $order->payment_gateway ?? null,
-            'transactions' => $order->payment_transactions ?? [],
-            'transaction_id' => $slots['transaction_id'] ?? null,
+            'order_number'   => $order->order_number,
+            'payment_status' => $order->payment_status       ?? 'unknown',
+            'paid_amount'    => $order->paid_amount          ?? 0,
+            'currency'       => $order->currency             ?? null,
+            'attempts'       => $order->payment_attempts     ?? 0,
+            'gateway'        => $order->payment_gateway      ?? null,
+            'transactions'   => $order->payment_transactions ?? [],
+            'transaction_id' => $slots['transaction_id']     ?? null,
         ];
 
         return ['status' => 'done', 'message' => 'Payment status fetched.', 'data' => $data];
@@ -231,11 +231,11 @@ class OrderIntentHandler
 
         $data = [
             'order_number' => $order->order_number,
-            'method' => $order->payment_method ?? null,
-            'brand' => $order->card_brand ?? null,
-            'last4' => $order->card_last4 ?? null,
-            'upi' => $order->upi ?? null,
-            'wallet' => $order->wallet ?? null,
+            'method'       => $order->payment_method ?? null,
+            'brand'        => $order->card_brand     ?? null,
+            'last4'        => $order->card_last4     ?? null,
+            'upi'          => $order->upi            ?? null,
+            'wallet'       => $order->wallet         ?? null,
         ];
 
         return ['status' => 'done', 'message' => 'Payment method fetched.', 'data' => $data];
@@ -254,18 +254,18 @@ class OrderIntentHandler
 
         $data = [
             'order_number' => $order->order_number,
-            'subtotal' => $order->subtotal ?? 0,
-            'tax' => $order->tax ?? 0,
-            'discount' => $order->discount ?? 0,
-            'shipping' => $order->shipping ?? 0,
-            'total' => $order->total ?? 0,
-            'currency' => $order->currency ?? null,
-            'items' => $order->items ?? [],
+            'subtotal'     => $order->subtotal ?? 0,
+            'tax'          => $order->tax      ?? 0,
+            'discount'     => $order->discount ?? 0,
+            'shipping'     => $order->shipping ?? 0,
+            'total'        => $order->total    ?? 0,
+            'currency'     => $order->currency ?? null,
+            'items'        => $order->items    ?? [],
         ];
 
         return ['status' => 'done', 'message' => 'Amount details fetched.', 'data' => $data];
     }
-    
+
     protected function agentInfo(array $slots): array
     {
         if (empty($slots['order_number']) && empty($slots['transaction_id'])) {
@@ -278,11 +278,11 @@ class OrderIntentHandler
         }
 
         $data = [
-            'order_number' => $order->order_number,
-            'agent_name' => $order->agent_name ?? null,
-            'agent_phone' => $order->agent_phone ?? null,
-            'agent_vehicle' => $order->agent_vehicle ?? null,
-            'agent_rating' => $order->agent_rating ?? null,
+            'order_number'  => $order->order_number,
+            'agent_name'    => $order->agent_name       ?? null,
+            'agent_phone'   => $order->agent_phone      ?? null,
+            'agent_vehicle' => $order->agent_vehicle    ?? null,
+            'agent_rating'  => $order->agent_rating     ?? null,
             'last_location' => $order->current_location ?? null,
         ];
 
