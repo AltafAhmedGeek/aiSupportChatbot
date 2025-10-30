@@ -5,19 +5,17 @@ namespace App\Services;
 use App\Constants\Faq;
 use App\Enums\Chat\BasicIntendEnum;
 use App\Services\Intent\RuleBasedIntentClassifier;
+use Throwable;
 
 class ChatIntendDetectorService
 {
     public function detectBasicintend($message): ?string
     {
-        $classifier = new RuleBasedIntentClassifier;
-        $result     = $classifier->classify($message);
-
-        if (str_starts_with($result['intent'], BasicIntendEnum::ORDER->value)) {
+        if ($this->isOrderRelated($message)) {
             return BasicIntendEnum::ORDER->value;
         }
 
-        if ($this->isFaqRelated(strtolower($message))) {
+        if ($this->isFaqRelated($message)) {
             return BasicIntendEnum::FAQ->value;
         }
 
@@ -50,6 +48,8 @@ class ChatIntendDetectorService
     {
         $keywords = Faq::TAGS;
 
+        $message = strtolower($message);
+
         foreach ($keywords as $key => $keyword) {
             if (str_contains($message, strtolower($key))) {
                 return true;
@@ -57,5 +57,24 @@ class ChatIntendDetectorService
         }
 
         return false;
+    }
+
+    private function isOrderRelated(string $message): bool
+    {
+        try {
+            $message = strtolower($message);
+
+            $classifier = new RuleBasedIntentClassifier;
+
+            $result = $classifier->classify($message);
+
+            return str_starts_with($result['intent'], BasicIntendEnum::ORDER->value);
+
+        } catch (Throwable $th) {
+
+            report($th);
+
+            return false;
+        }
     }
 }
