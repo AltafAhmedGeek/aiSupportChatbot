@@ -9,9 +9,16 @@ use App\Services\Intent\SlotExtractor;
 
 class ChatService
 {
+    protected ChatIntendDetectorService $detector;
+
+    protected bool $aiMode;
+
     public function __construct(
-        private ChatIntendDetectorService $detector
-    ) {}
+        bool $aiMode = false
+    ) {
+        $this->aiMode   = $aiMode;
+        $this->detector = app(ChatIntendDetectorService::class);
+    }
 
     public function handleMessage($message)
     {
@@ -29,7 +36,7 @@ class ChatService
 
     private function detectBasicintend($message): ?string
     {
-        return $this->detector->detectBasicintend($message);
+        return $this->detector->detectBasicintend($message, $this->aiMode);
     }
 
     private function detectAdvancedintend(BasicIntendEnum $basicIntend, $message): ?string

@@ -1,5 +1,7 @@
 <?php
 
+use App\Constants\Faq;
+
 return [
 
     /*
@@ -121,6 +123,12 @@ return [
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store'  => env('APP_MAINTENANCE_STORE', 'database'),
+    ],
+
+    'prism' => [
+        'system_prompts' => [
+            'intend_detection' => env('PRISM_INTEND_DETECTION_SYSTEM_PROMPT', "You are an intent classifier. Outputs allowed: exactly one token — 'order', 'faq', or null.\n If message contains order indicators or an order id, output 'order'.\n If message matches any FAQ keyword from the provided map, output 'faq'.\n Faq related keywards are : ".json_encode(Faq::TAGS)."\n Otherwise output null.\n Return only the token."),
+        ],
     ],
 
 ];

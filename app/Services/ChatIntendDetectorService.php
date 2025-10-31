@@ -5,12 +5,40 @@ namespace App\Services;
 use App\Constants\Faq;
 use App\Enums\Chat\BasicIntendEnum;
 use App\Services\Intent\RuleBasedIntentClassifier;
+use Illuminate\Support\Facades\Log;
+use Prism\Prism\Enums\Provider;
+use Prism\Prism\Facades\Prism;
+use Prism\Prism\ValueObjects\Messages\SystemMessage;
+use Prism\Prism\ValueObjects\Messages\UserMessage;
 use Throwable;
 
 class ChatIntendDetectorService
 {
-    public function detectBasicintend($message): ?string
+    public function detectBasicintend(string $message, bool $aiMode = false): ?string
     {
+        if ($aiMode) {
+
+            $system = config('app.prism.system_prompts.intend_detection');
+
+            $systemMessage = new SystemMessage($system);
+
+            $response = Prism::text()
+                ->using(Provider::Gemini, 'gemini-2.5-flash')
+                ->withSystemPrompt($systemMessage)
+                ->withMessages([
+                    new UserMessage($message),
+                ])
+                ->asText();
+
+            $intend = trim(strtolower($response->text));
+
+            Log::info('Detecting intent using AI for message: '.$message.'. Detected intent: '.$intend);
+
+            if (in_array($intend, [BasicIntendEnum::ORDER->value, BasicIntendEnum::FAQ->value])) {
+                return $intend;
+            }
+        }
+
         if ($this->isOrderRelated($message)) {
             return BasicIntendEnum::ORDER->value;
         }
