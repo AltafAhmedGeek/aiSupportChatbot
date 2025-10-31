@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Constants\Faq;
 use App\Enums\Chat\BasicIntendEnum;
+use App\Service\Intent\AdvancedIntentManager;
 use App\Services\Intent\RuleBasedIntentClassifier;
 use Illuminate\Support\Facades\Log;
 use Prism\Prism\Enums\Provider;
@@ -50,26 +51,11 @@ class ChatIntendDetectorService
         return null;
     }
 
-    public function detectAdvancedintend(BasicIntendEnum $intend, $message): ?string
+    public function detectAdvancedintend(BasicIntendEnum $intend, string $message, bool $aiMode): ?string
     {
-        if ($intend == BasicIntendEnum::FAQ) {
-            $tags = Faq::TAGS;
-            foreach ($tags as $keyword => $tag) {
-                if (str_contains(strtolower($message), strtolower($keyword))) {
-                    return $tag;
-                }
-            }
-        }
+        $detector = app(AdvancedIntentManager::class)->getIntentDetector($intend, $message, $aiMode);
 
-        if ($intend == BasicIntendEnum::ORDER) {
-            $classifier = new RuleBasedIntentClassifier;
-            $result     = $classifier->classify($message);
-            if ($result['intent'] !== 'unknown') {
-                return $result['intent'];
-            }
-        }
-
-        return null;
+        return $detector->detectAdvancedintend($intend, $message);
     }
 
     private function isFaqRelated($message): bool

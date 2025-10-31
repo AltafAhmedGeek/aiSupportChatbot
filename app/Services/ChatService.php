@@ -41,7 +41,7 @@ class ChatService
 
     private function detectAdvancedintend(BasicIntendEnum $basicIntend, $message): ?string
     {
-        return $this->detector->detectAdvancedintend($basicIntend, $message);
+        return $this->detector->detectAdvancedintend($basicIntend, $message, $this->aiMode);
     }
 
     private function handleOrderQueries($message): string
