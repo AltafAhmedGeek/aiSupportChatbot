@@ -53,7 +53,7 @@ class ChatIntendDetectorService
 
     public function detectAdvancedintend(BasicIntendEnum $intend, string $message, bool $aiMode): ?string
     {
-        $detector = app(AdvancedIntentManager::class)->getIntentDetector($intend, $message, $aiMode);
+        $detector = app(AdvancedIntentManager::class)->getIntentDetector($aiMode);
 
         return $detector->detectAdvancedintend($intend, $message);
     }
