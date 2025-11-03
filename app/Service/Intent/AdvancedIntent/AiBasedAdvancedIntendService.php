@@ -2,8 +2,15 @@
 
 namespace App\Service\Intent\AdvancedIntent;
 
+use App\Constants\Faq;
 use App\Contracts\Intent\AdvancedIntendDetector;
 use App\Enums\Chat\BasicIntendEnum;
+use Illuminate\Support\Facades\Log;
+use Prism\Prism\Enums\Provider;
+use Prism\Prism\Facades\Prism;
+use Prism\Prism\ValueObjects\Messages\SystemMessage;
+use Prism\Prism\ValueObjects\Messages\UserMessage;
+use Throwable;
 
 class AiBasedAdvancedIntendService implements AdvancedIntendDetector
 {
@@ -16,14 +23,33 @@ class AiBasedAdvancedIntendService implements AdvancedIntendDetector
         };
     }
 
-    protected function detectOrderIntent(string $message): ?string
-    {
-        return null;
-    }
+    protected function detectOrderIntent(string $message): ?string {}
 
     protected function detectFaqIntent(string $message): ?string
     {
-        // Implement FAQ intent detection logic here
-        return null;
+        try {
+            $response = Prism::text()
+                ->using(Provider::Gemini, 'gemini-2.5-flash')
+                ->withSystemPrompt(new SystemMessage(config('app.prism.system_prompts.advanced_faq_intent_detection')))
+                ->withMessages([
+                    new UserMessage($message),
+                ])
+                ->asText();
+
+            Log::info('AI-based FAQ intent detection for message '.$message.'. Response: '.$response->text);
+
+            $intend = trim($response->text);
+
+            if (! $intend || ! in_array($intend, Faq::TAGS)) {
+                return null;
+            }
+
+            return $intend;
+
+        } catch (Throwable $th) {
+            Log::error('Error occurred during AI-based FAQ intent detection for message '.$message.': '.$th->getMessage());
+
+            return null;
+        }
     }
 }
