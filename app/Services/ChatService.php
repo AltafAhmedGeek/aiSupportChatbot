@@ -49,6 +49,11 @@ class ChatService
         $intend        = $this->detectAdvancedintend(BasicIntendEnum::ORDER, $message);
         $slots         = (new SlotExtractor)->extract($message);
         $intendhandler = new OrderIntentHandler;
+
+        if (! $intend) {
+            return "I'm not sure about that. Can you ask differently?";
+        }
+
         $result        = $intendhandler->handle($intend, $slots);
 
         return $this->generateResponse($result, $intendhandler);

@@ -23,7 +23,36 @@ class AiBasedAdvancedIntendService implements AdvancedIntendDetector
         };
     }
 
-    protected function detectOrderIntent(string $message): ?string {}
+    protected function detectOrderIntent(string $message): ?string
+    {
+        try {
+            $response = Prism::text()
+                ->using(Provider::Gemini, 'gemini-2.5-flash')
+                ->withSystemPrompt(new SystemMessage(config('app.prism.system_prompts.advanced_order_intent_detection')))
+                ->withMessages([
+                    new UserMessage($message),
+                ])
+                ->asText();
+
+            Log::info('AI-based Order intent detection for message '.$message.'. Response: '.$response->text);
+
+            $intend = trim($response->text);
+
+            if ($intend === 'unknown' || empty($intend)) {
+                return null;
+            }
+
+            return $intend;
+
+        } catch (Throwable $th) {
+
+            Log::error('Error occurred during AI-based Order intent detection for message '.$message.': '.$th->getMessage());
+
+            report($th);
+
+            return null;
+        }
+    }
 
     protected function detectFaqIntent(string $message): ?string
     {
@@ -47,7 +76,10 @@ class AiBasedAdvancedIntendService implements AdvancedIntendDetector
             return $intend;
 
         } catch (Throwable $th) {
+
             Log::error('Error occurred during AI-based FAQ intent detection for message '.$message.': '.$th->getMessage());
+
+            report($th);
 
             return null;
         }
