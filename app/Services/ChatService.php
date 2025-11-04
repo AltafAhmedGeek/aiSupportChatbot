@@ -6,6 +6,12 @@ use App\Enums\Chat\BasicIntendEnum;
 use App\Models\Faq;
 use App\Services\Intent\OrderIntentHandler;
 use App\Services\Intent\SlotExtractor;
+use Log;
+use Prism\Prism\Enums\Provider;
+use Prism\Prism\Facades\Prism;
+use Prism\Prism\ValueObjects\Messages\SystemMessage;
+use Prism\Prism\ValueObjects\Messages\UserMessage;
+use Throwable;
 
 class ChatService
 {
@@ -54,9 +60,9 @@ class ChatService
             return "I'm not sure about that. Can you ask differently?";
         }
 
-        $result = $intendhandler->handle($intend, $slots);
+        $result = $intendhandler->handle($intend, slots: $slots);
 
-        return $this->generateResponse($result, $intendhandler);
+        return $this->generateResponse($result, $intendhandler, $this->aiMode);
     }
 
     private function handleFaqQueries($message): string
@@ -90,6 +96,41 @@ class ChatService
 
     private function generateResponse(array $result, OrderIntentHandler $intendhandler, bool $isAiMode = false): string
     {
-        return $result['message'].' : '.PHP_EOL.$intendhandler->dataToString($result['data']);
+        return match ($isAiMode) {
+            false => $result['message'].' : '.PHP_EOL.$intendhandler->dataToString($result['data']),
+            true  => $this->generateAiResponse($result, $intendhandler),
+        };
+    }
+
+    private function generateAiResponse(array $result, OrderIntentHandler $intendhandler): string
+    {
+        try {
+
+            $response = Prism::text()
+                ->using(Provider::Gemini, 'gemini-2.5-flash')
+                ->withSystemPrompt(new SystemMessage(config('app.prism.system_prompts.ai_response_generation')))
+                ->withMessages([
+                    new UserMessage('Generate a customer friendly response based on the following data: '.PHP_EOL.$intendhandler->dataToString($result['data']).PHP_EOL.' and message: '.$result['message']),
+                ])
+                ->asText();
+
+            $response = trim($response->text);
+
+            if (empty($response)) {
+                return $this->generateResponse($result, $intendhandler);
+            }
+
+            Log::info('AI-generated response: '.$response);
+
+            return $response;
+
+        } catch (Throwable $th) {
+
+            Log::error('Error generating AI response, responding with generic response. Error : '.$th->getMessage());
+
+            report($th);
+
+            return $this->generateResponse($result, $intendhandler);
+        }
     }
 }
