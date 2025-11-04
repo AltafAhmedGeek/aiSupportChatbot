@@ -20,7 +20,7 @@ class ChatService
         $this->detector = app(ChatIntendDetectorService::class);
     }
 
-    public function handleMessage($message)
+    public function handleMessage($message): string
     {
         $intend = $this->detectBasicintend($message);
 
@@ -54,12 +54,12 @@ class ChatService
             return "I'm not sure about that. Can you ask differently?";
         }
 
-        $result        = $intendhandler->handle($intend, $slots);
+        $result = $intendhandler->handle($intend, $slots);
 
         return $this->generateResponse($result, $intendhandler);
     }
 
-    private function handleFaqQueries($message)
+    private function handleFaqQueries($message): string
     {
         $intend = $this->detectAdvancedintend(BasicIntendEnum::FAQ, $message);
 
